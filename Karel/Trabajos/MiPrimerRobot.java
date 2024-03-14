@@ -1,5 +1,6 @@
 import kareltherobot.*; 
-import java.awt.Color; 
+import java.awt.Color;
+
 public class MiPrimerRobot implements Directions 
 { 
 public static void main(String [] args) 
@@ -11,34 +12,47 @@ World.setVisible(true);
 
 // Coloca el robot en la posición inicial del mundo (1,1), 
 // mirando al Este, sin ninguna sirena. 
-Robot Karel = new Robot(1, 1, East, 0); 
-
+Robot K1 = new Robot(1, 1, East, 0); 
+Robot K2 = new Robot(2, 1, East, 0);
  
-// Mover el robot 3 pasos, girar hacia el norte y apagar el robot. 
  
 // Mover el robot 4 pasos 
-  Karel.move(); 
-  Karel.move(); 
-  Karel.move(); 
-  Karel.move(); 
+  K1.move();
+  K2.turnLeft();
+  K2.turnLeft();
+  K2.turnLeft();   
+  K1.move(); 
+  K2.move();
+  K1.move(); 
+  K2.move();
+  K1.move(); 
+  K2.move();
+  K2.move();
 // Recoger los 5 beepers 
-  Karel.pickBeeper(); 
-  Karel.pickBeeper(); 
-  Karel.pickBeeper(); 
-  Karel.pickBeeper(); 
-  Karel.pickBeeper(); 
+  K1.pickBeeper(); 
+  K1.pickBeeper(); 
+  K1.pickBeeper(); 
+  K1.pickBeeper(); 
+  K1.pickBeeper(); 
 // Girar a la izquierda y salir de los muros 
-  Karel.turnLeft(); 
-  Karel.move(); 
-  Karel.move(); 
+  K1.turnLeft(); 
+  K2.turnLeft();
+  K1.move(); 
+  K2.move();
+  K1.move(); 
+  K2.move();
 // Poner los beepers fuera de los muros 
-  Karel.putBeeper(); 
-  Karel.putBeeper(); 
-  Karel.putBeeper(); 
-  Karel.putBeeper(); 
-  Karel.putBeeper(); 
+  K1.putBeeper(); 
+  K1.putBeeper(); 
+  K1.putBeeper(); 
+  K1.putBeeper(); 
+  K1.putBeeper(); 
 // Ponerse en otra posición y apagar el robot 
-  Karel.move(); 
-  Karel.turnOff(); 
+  K1.move();
+  K2.move();
+  K2.turnLeft(); 
+  K2.move();
+  K2.turnOff(); 
+  K1.turnOff(); 
 } 
 }
