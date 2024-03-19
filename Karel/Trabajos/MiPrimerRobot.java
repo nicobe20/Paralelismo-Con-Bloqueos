@@ -29,9 +29,9 @@ public class MiPrimerRobot implements Directions {
 
     public static void createRobots(String[] args) {
         // Definición de valores por defecto
-        int mineros = 2;
-        int trenes = 2;
-        int extractores = 2;
+        int mineros = 1;
+        int trenes = 1;
+        int extractores = 1;
 
         // Procesamiento de argumentos de línea de comandos
         if (args.length > 0) {
@@ -48,20 +48,38 @@ public class MiPrimerRobot implements Directions {
 
         // Creación de mineros
         for (int z = 0; z < mineros; z++) {
-            Workers mineroBot = new Workers(10, 1, South, 0, Color.PINK);
+            Workers mineroBot = new Workers(7, 1, South, 0, Color.DARK_GRAY);
             mineroBot.start();
+            try {
+                // Pausa de 1000 milisegundos (1 segundo) entre la creación de cada robot
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         // Creación de trenes
         for (int y = 0; y < trenes; y++) {
-            Workers trenesBot = new Workers(12, 1, South, 0, Color.BLUE);
+            Workers trenesBot = new Workers(7, 1, South, 0, Color.CYAN);
             trenesBot.start();
+            try {
+                // Pausa de 1000 milisegundos (1 segundo) entre la creación de cada robot
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         // Creación de extractores
         for (int x = 0; x < extractores; x++) {
-            Workers extractoresBot = new Workers(14, 1, South, 0, Color.RED);
+            Workers extractoresBot = new Workers(7, 1, South, 0, Color.RED);
             extractoresBot.start();
+            try {
+                // Pausa de 1000 milisegundos (1 segundo) entre la creación de cada robot
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -72,7 +90,6 @@ public class MiPrimerRobot implements Directions {
     }
 }
 
-
 class Racer extends Robot implements Runnable {
     public Racer(int street, int avenue, Direction direction, int beepers, Color color) {
         super(street, avenue, direction, beepers, color); // Utilizamos el constructor adecuado de la superclase Robot
@@ -80,16 +97,21 @@ class Racer extends Robot implements Runnable {
     }
 
     public void race() {
-        // Mover hacia adelante
-        move();
-        
-        // Verificar si hay un beeper en la casilla actual y recogerlo si es así
-        if (nextToABeeper()) {
-            pickBeeper();
+        // Mover hasta que se apague
+
+        while (true) {
+            if (frontIsClear()) {
+                move();
+
+            } else {
+                turnLeft();
+            }
+
+            // if (nextToARobot()) {
+            //     turnOff();
+            // }
         }
-        
         // Apagar al robot
-        turnOff();
     }
 
     public void run() {
