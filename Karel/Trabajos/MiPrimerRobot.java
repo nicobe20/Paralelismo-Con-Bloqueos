@@ -51,8 +51,7 @@ public class MiPrimerRobot implements Directions {
             Workers mineroBot = new Workers(7, 1, South, 0, Color.DARK_GRAY);
             mineroBot.start();
             try {
-                // Pausa de 1000 milisegundos (1 segundo) entre la creación de cada robot
-                Thread.sleep(2000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -63,7 +62,6 @@ public class MiPrimerRobot implements Directions {
             Workers trenesBot = new Workers(7, 1, South, 0, Color.CYAN);
             trenesBot.start();
             try {
-                // Pausa de 1000 milisegundos (1 segundo) entre la creación de cada robot
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -75,12 +73,12 @@ public class MiPrimerRobot implements Directions {
             Workers extractoresBot = new Workers(7, 1, South, 0, Color.RED);
             extractoresBot.start();
             try {
-                // Pausa de 1000 milisegundos (1 segundo) entre la creación de cada robot
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     public static void main(String[] args) {
@@ -91,27 +89,54 @@ public class MiPrimerRobot implements Directions {
 }
 
 class Racer extends Robot implements Runnable {
+    private Color robotColor;
+    private int currentStreet; // Calle actual del robot
+    private int currentAvenue; // Avenida actual del robot
+
     public Racer(int street, int avenue, Direction direction, int beepers, Color color) {
         super(street, avenue, direction, beepers, color); // Utilizamos el constructor adecuado de la superclase Robot
+        robotColor = color;
+        currentStreet = street; // Inicializar la calle actual
+        currentAvenue = avenue; // Inicializar la avenida actual
         World.setupThread(this);
     }
 
     public void race() {
         // Mover hasta que se apague
-
         while (true) {
-            if (frontIsClear()) {
-                move();
+            // Verificar si el robot es de color negro (minero)
+            if (robotColor.equals(Color.DARK_GRAY)) {
+                // Verificar si está en la calle 1 y avenida 1
+                if (currentStreet == 11 && currentAvenue == 8) {
+                    turnLeft();
+                    turnLeft();
+                    turnLeft();
+                }
 
-            } else {
-                turnLeft();
+                // Mover hacia adelante si no hay una pared en frente
+                if (frontIsClear()) {
+                    move();
+                    // Actualizar la posición del robot
+                    updatePosition();
+                } else {
+                    // Girar a la izquierda si no puede avanzar
+                    turnLeft();
+                }
             }
-
-            // if (nextToARobot()) {
-            //     turnOff();
-            // }
         }
-        // Apagar al robot
+    }
+
+    // Metodo para actualizar la posición del robot
+    private void updatePosition() {
+        if (facingNorth()) {
+            currentStreet++; // Mover hacia el norte resta 1 a la calle actual
+        } else if (facingSouth()) {
+            currentStreet--; // Mover hacia el sur suma 1 a la calle actual
+        } else if (facingEast()) {
+            currentAvenue++; // Mover hacia el este suma 1 a la avenida actual
+        } else if (facingWest()) {
+            currentAvenue--; // Mover hacia el oeste resta 1 a la avenida actual
+        }
     }
 
     public void run() {
