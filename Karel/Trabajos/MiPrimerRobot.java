@@ -6,8 +6,12 @@ import java.util.List;
 public class MiPrimerRobot implements Directions {
 
     public static List<Minero> allMineros = new ArrayList<>();
+    public static List<Tren> allTrenes = new ArrayList<>();
 
     public static boolean ocupado = false;
+
+    public static int beepersEnPuertoMina = 0;
+    public static boolean mineroDescargando = false;
 
     public static List<Minero> getMineros() {
         return allMineros;
@@ -17,8 +21,32 @@ public class MiPrimerRobot implements Directions {
         return ocupado;
     }
 
+    public static boolean getPuertoMina() {
+        return mineroDescargando;
+    }
+
+    public static int getBeepersPuertoMina() {
+        return beepersEnPuertoMina;
+    }
+
     public static void updateMina() {
         ocupado = !ocupado;
+    }
+
+    public static void truePuertoMina() {
+        mineroDescargando = true;
+    }
+
+    public static void falsePuertoMina() {
+        mineroDescargando = false;
+    }
+
+    public static void incrementBeepersPuertoMina() {
+        beepersEnPuertoMina++;
+    }
+
+    public static void decrementBeepersPuertoMina() {
+        beepersEnPuertoMina--;
     }
 
     public static class Workers extends Thread {
@@ -70,16 +98,17 @@ public class MiPrimerRobot implements Directions {
         }
 
         // // Crear trenes
-        // for (int y = 0; y < trenes; y++) {
-
-        // Workers trenesBot = new Workers(7, 1, South, 0, Color.CYAN, nuevoTren);
-        // trenesBot.start();
-        // try {
-        // Thread.sleep(2000);
-        // } catch (InterruptedException e) {
-        // e.printStackTrace();
-        // }
-        // }
+        for (int y = 0; y < trenes; y++) {
+            Tren nuevoTren = new Tren(7, 1);
+            allTrenes.add(nuevoTren);
+            Workers trenesBot = new Workers(nuevoTren, 7, 1, South, 0, Color.CYAN);
+            trenesBot.start();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
         // // Crear extractores
         // for (int x = 0; x < extractores; x++) {
@@ -102,13 +131,19 @@ public class MiPrimerRobot implements Directions {
 }
 
 class Racer extends Robot implements Runnable {
-    private Minero minero; // Cada Racer tiene su propio Minero asociado
+    private Minero minero;
+    private Tren tren;
     private Color robotColor;
 
     public Racer(int street, int avenue, Direction direction, int beepers, Color color, Object mainObject) {
         super(street, avenue, direction, beepers, color);
+        robotColor = color;
+
         if (mainObject instanceof Minero) {
             this.minero = (Minero) mainObject; // Asignamos el Minero asociado al Racer
+        } else if (mainObject instanceof Tren) {
+            this.tren = (Tren) mainObject; // Asignamos el Minero asociado al Racer
+
         }
 
         World.setupThread(this);
@@ -117,46 +152,99 @@ class Racer extends Robot implements Runnable {
 
     public void race() {
         while (true) {
+            if (robotColor.equals(Color.DARK_GRAY)) {
 
-            if (minero.getStreet() == 11 && minero.getAvenue() == 8 && facingSouth()) {
-                turnLeft();
-            }
+                if (minero.getStreet() == 11 && minero.getAvenue() == 8 && facingSouth()) {
+                    turnLeft();
+                }
 
-            if (minero.getStreet() == 11 && minero.getAvenue() == 14) {
-                if (facingEast()) {
-                    recogerBeeper();
-                } else if (facingNorth()) {
-                    while (!facingEast()) {
+                if (minero.getStreet() == 11 && minero.getAvenue() == 14) {
+                    if (facingEast()) {
+                        recogerBeeper();
+                    } else if (facingNorth()) {
+                        while (!facingEast()) {
+                            turnLeft();
+                        }
+                        recogerBeeper();
+
+                    } else if (facingWest()) {
+                        while (MiPrimerRobot.getPuertoMina()) {
+                            ponerEnEspera();
+                        }
+                    }
+
+                    // Para poner el cargamento
+                }
+
+                if (minero.getStreet() == 11 && minero.getAvenue() == 13) {
+                    if (facingWest()) {
+                        MiPrimerRobot.truePuertoMina(); // Decimos que el puerto mina esta "ocupado"
+
+                        MiPrimerRobot.updateMina(); // Decimos que la mina esta "desocupada"
+                        if (anyBeepersInBeeperBag()) {
+                            for (int i = 0; i < 20; i++) {
+                                putBeeper();
+                                MiPrimerRobot.incrementBeepersPuertoMina();
+                            }
+                        }
+                        MiPrimerRobot.falsePuertoMina(); // Decimos que el puerto mina esta "desocupada"
+                        ubicarMineroPuntoEspera(minero);
+
+                    }
+                }
+
+                if (minero.getStreet() == 11 && minero.getAvenue() == 13 && MiPrimerRobot.getMina()) {
+                    for (Minero mineroActual : MiPrimerRobot.getMineros()) {
+                        if (mineroActual.getInsideTheMine() == false) {
+                            ubicarMineroPuntoEspera(mineroActual);
+                        }
+                    }
+                }
+
+                if (frontIsClear()) {
+                    move();
+                    updateMineroPosition(minero);
+                } else {
+                    turnLeft();
+                }
+            } else if (robotColor.equals(Color.CYAN)) {
+
+                if (tren.getStreet() == 11 && tren.getAvenue() == 8 && facingSouth()) {
+                    turnLeft();
+                }
+
+                if (tren.getStreet() == 11 && tren.getAvenue() == 12 && facingEast()) {
+                    while (MiPrimerRobot.getPuertoMina() == true || MiPrimerRobot.getBeepersPuertoMina() < 20) {
+                        ponerEnEspera();
+                    }
+                    move();
+                    updateTrenPosition(tren);
+                }
+
+                if (tren.getStreet() == 11 && tren.getAvenue() == 13) {
+                    MiPrimerRobot.truePuertoMina();
+                    if (nextToABeeper()) {
+                        for (int i = 0; i < 20; i++) {
+                            pickBeeper();
+                            MiPrimerRobot.decrementBeepersPuertoMina();
+                        }
                         turnLeft();
-                    }
-                    recogerBeeper();
-
-                }
-
-            } else if (minero.getStreet() == 11 && minero.getAvenue() == 13 && facingWest()) {
-                MiPrimerRobot.updateMina();
-                if (anyBeepersInBeeperBag()) {
-                    for (int i = 0; i < 20; i++) {
-                        putBeeper();
+                        turnLeft();
+                        turnLeft();
+                        MiPrimerRobot.falsePuertoMina();
                     }
                 }
-                ubicarMineroPuntoEspera(minero);
 
-            }
-
-            if (minero.getStreet() == 11 && minero.getAvenue() == 13 && MiPrimerRobot.getMina()) {
-                for (Minero mineroActual : MiPrimerRobot.getMineros()) {
-                    if (mineroActual.getInsideTheMine() == false) {
-                        ubicarMineroPuntoEspera(mineroActual);
-                    }
+                if (tren.getStreet() == 6 && tren.getAvenue() == 13) {
+                    turnLeft();
                 }
-            }
 
-            if (frontIsClear()) {
-                move();
-                updateMineroPosition(minero);
-            } else {
-                turnLeft();
+                if (frontIsClear()) {
+                    move();
+                    updateTrenPosition(tren);
+                } else {
+                    turnLeft();
+                }
             }
         }
     }
@@ -174,9 +262,21 @@ class Racer extends Robot implements Runnable {
         }
     }
 
+    private void updateTrenPosition(Tren tren) {
+        if (facingNorth()) {
+            tren.incrementStreet();
+        } else if (facingSouth()) {
+            tren.decreaseStreet();
+        } else if (facingEast()) {
+            tren.incrementAvenue();
+        } else if (facingWest()) {
+            tren.decreaseAvenue();
+        }
+    }
+
     private void recogerBeeper() {
         minero.updateInsideTheMine();
-        MiPrimerRobot.updateMina();
+        MiPrimerRobot.updateMina(); // Decimos que la mina esta "Ocupada"
         if (nextToABeeper()) {
             for (int i = 0; i < 20; i++) {
                 pickBeeper();
@@ -240,6 +340,50 @@ class Minero {
     public void updateInsideTheMine() {
         insideTheMine = !insideTheMine;
     }
+
+    public void incrementStreet() {
+        street++;
+    }
+
+    public void incrementAvenue() {
+        avenue++;
+    }
+
+    public void decreaseStreet() {
+        street--;
+    }
+
+    public void decreaseAvenue() {
+        avenue--;
+    }
+}
+
+class Tren {
+    private int street;
+    private int avenue;
+    // private boolean insideTheMine;
+
+    public Tren(int street, int avenue) {
+        this.street = street;
+        this.avenue = avenue;
+        // this.insideTheMine = insideTheMine;
+    }
+
+    public int getStreet() {
+        return street;
+    }
+
+    public int getAvenue() {
+        return avenue;
+    }
+
+    // public boolean getInsideTheMine() {
+    // return insideTheMine;
+    // }
+
+    // public void updateInsideTheMine() {
+    // insideTheMine = !insideTheMine;
+    // }
 
     public void incrementStreet() {
         street++;
