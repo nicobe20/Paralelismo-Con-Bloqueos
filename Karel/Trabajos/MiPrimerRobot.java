@@ -7,7 +7,6 @@ public class MiPrimerRobot implements Directions {
 
     public static List<Minero> allMineros = new ArrayList<>();
 
-
     public static boolean ocupado = false;
 
     public static List<Minero> getMineros() {
@@ -23,19 +22,19 @@ public class MiPrimerRobot implements Directions {
     }
 
     public static class Workers extends Thread {
-        private Minero minero; // Cada trabajador tiene su propio Minero
-        private Racer worker; // Cada trabajador tiene su propio Racer (robot)
+        private Object mainObject; // Objeto principal (Minero, Tren, Extractor)
+        private Racer worker;
 
-        public Workers(Minero minero, int street, int avenue, Direction direction, int beepers, Color color) {
-            this.minero = minero;
-            this.worker = new Racer(street, avenue, direction, beepers, color, minero); // Creamos el Racer con su
+        public Workers(Object mainObject, int street, int avenue, Direction direction, int beepers, Color color) {
+            this.mainObject = mainObject;
+            this.worker = new Racer(street, avenue, direction, beepers, color, mainObject); // Creamos el Racer con el
+                                                                                            // objeto principal
         }
 
         public void run() {
             worker.race(); // Ejecutamos el movimiento del Racer
         }
     }
-    
 
     public static void createRobots(String[] args) {
         // Definición de valores por defecto
@@ -73,24 +72,24 @@ public class MiPrimerRobot implements Directions {
         // // Crear trenes
         // for (int y = 0; y < trenes; y++) {
 
-        //     Workers trenesBot = new Workers(7, 1, South, 0, Color.CYAN, nuevoTren);
-        //     trenesBot.start();
-        //     try {
-        //         Thread.sleep(2000);
-        //     } catch (InterruptedException e) {
-        //         e.printStackTrace();
-        //     }
+        // Workers trenesBot = new Workers(7, 1, South, 0, Color.CYAN, nuevoTren);
+        // trenesBot.start();
+        // try {
+        // Thread.sleep(2000);
+        // } catch (InterruptedException e) {
+        // e.printStackTrace();
+        // }
         // }
 
         // // Crear extractores
         // for (int x = 0; x < extractores; x++) {
-        //     Workers extractoresBot = new Workers(7, 1, South, 0, Color.RED);
-        //     extractoresBot.start();
-        //     try {
-        //         Thread.sleep(2000);
-        //     } catch (InterruptedException e) {
-        //         e.printStackTrace();
-        //     }
+        // Workers extractoresBot = new Workers(7, 1, South, 0, Color.RED);
+        // extractoresBot.start();
+        // try {
+        // Thread.sleep(2000);
+        // } catch (InterruptedException e) {
+        // e.printStackTrace();
+        // }
         // }
 
     }
@@ -106,9 +105,11 @@ class Racer extends Robot implements Runnable {
     private Minero minero; // Cada Racer tiene su propio Minero asociado
     private Color robotColor;
 
-    public Racer(int street, int avenue, Direction direction, int beepers, Color color, Minero minero) {
+    public Racer(int street, int avenue, Direction direction, int beepers, Color color, Object mainObject) {
         super(street, avenue, direction, beepers, color);
-        this.minero = minero; // Asignamos el Minero asociado al Racer
+        if (mainObject instanceof Minero) {
+            this.minero = (Minero) mainObject; // Asignamos el Minero asociado al Racer
+        }
 
         World.setupThread(this);
         World.setDelay(50);
