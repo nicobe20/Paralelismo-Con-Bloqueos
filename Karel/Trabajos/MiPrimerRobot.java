@@ -5,14 +5,32 @@ import java.util.List;
 
 public class MiPrimerRobot implements Directions {
 
+    public static int capacidadMinero = 25;
+    public static int capacidadTren = 60;
+    public static int capacidadExtractor = capacidadMinero;
+
     public static List<Minero> allMineros = new ArrayList<>();
     public static List<Tren> allTrenes = new ArrayList<>();
-
-    public static boolean ocupado = false;
+    public static List<Extractor> allExtractores = new ArrayList<>();
 
     public static int beepersEnPuertoMina = 0;
+    public static int beepersEnPuertoExtractor = 0;
+
+    public static boolean ocupado = false;
     public static boolean puertoMinaOcupado = false;
     public static boolean puertoExtractorOcupado = false;
+
+    public static int getCapacidadMinero() {
+        return capacidadMinero;
+    }
+
+    public static int getCapacidadTren() {
+        return capacidadTren;
+    }
+
+    public static int getCapacidadExtractor() {
+        return capacidadExtractor;
+    }
 
     public static List<Minero> getMineros() {
         return allMineros;
@@ -38,6 +56,10 @@ public class MiPrimerRobot implements Directions {
         return beepersEnPuertoMina;
     }
 
+    public static int getBeepersPuertoExtractor() {
+        return beepersEnPuertoExtractor;
+    }
+
     public static void updateMina() {
         ocupado = !ocupado;
     }
@@ -50,8 +72,12 @@ public class MiPrimerRobot implements Directions {
         puertoMinaOcupado = false;
     }
 
-    public static void updatePuertoExtractor() {
-        puertoExtractorOcupado = !puertoExtractorOcupado;
+    public static void ocuparPuertoExtractor() {
+        puertoExtractorOcupado = true;
+    }
+
+    public static void desocuparPuertoExtractor() {
+        puertoExtractorOcupado = false;
     }
 
     public static void incrementBeepersPuertoMina() {
@@ -60,6 +86,14 @@ public class MiPrimerRobot implements Directions {
 
     public static void decrementBeepersPuertoMina() {
         beepersEnPuertoMina--;
+    }
+
+    public static void incrementBeepersPuertoExtractor() {
+        beepersEnPuertoExtractor++;
+    }
+
+    public static void decrementBeepersPuertoExtractor() {
+        beepersEnPuertoExtractor--;
     }
 
     public static class Workers extends Thread {
@@ -80,7 +114,7 @@ public class MiPrimerRobot implements Directions {
     public static void createRobots(String[] args) {
         // Definición de valores por defecto
         int mineros = 2;
-        int trenes = 18;
+        int trenes = 4;
         int extractores = 1;
 
         // Procesamiento de argumentos de línea de comandos
@@ -117,22 +151,24 @@ public class MiPrimerRobot implements Directions {
             Workers trenesBot = new Workers(nuevoTren, 7, 1, South, 0, Color.CYAN);
             trenesBot.start();
             try {
-                Thread.sleep(3500);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
 
         // // Crear extractores
-        // for (int x = 0; x < extractores; x++) {
-        // Workers extractoresBot = new Workers(7, 1, South, 0, Color.RED);
-        // extractoresBot.start();
-        // try {
-        // Thread.sleep(2000);
-        // } catch (InterruptedException e) {
-        // e.printStackTrace();
-        // }
-        // }
+        for (int x = 0; x < extractores; x++) {
+            Extractor nuevoTren = new Extractor(7, 1);
+            allExtractores.add(nuevoTren);
+            Workers extractoresBot = new Workers(nuevoTren, 7, 1, South, 0, Color.RED);
+            extractoresBot.start();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 
@@ -146,6 +182,7 @@ public class MiPrimerRobot implements Directions {
 class Racer extends Robot implements Runnable {
     private Minero minero;
     private Tren tren;
+    private Extractor extractor;
     private Color robotColor;
 
     public Racer(int street, int avenue, Direction direction, int beepers, Color color, Object mainObject) {
@@ -156,11 +193,12 @@ class Racer extends Robot implements Runnable {
             this.minero = (Minero) mainObject; // Asignamos el Minero asociado al Racer
         } else if (mainObject instanceof Tren) {
             this.tren = (Tren) mainObject; // Asignamos el Minero asociado al Racer
-
+        } else if (mainObject instanceof Extractor) {
+            this.extractor = (Extractor) mainObject; // Asignamos el Minero asociado al Racer
         }
 
         World.setupThread(this);
-        World.setDelay(30);
+        World.setDelay(40);
     }
 
     public void race() {
@@ -173,19 +211,18 @@ class Racer extends Robot implements Runnable {
 
                 if (minero.getStreet() == 11 && minero.getAvenue() == 14) {
                     if (facingEast()) {
-                        recogerBeeper();
+                        mineroPickBeeper();
                     } else if (facingNorth()) {
                         while (!facingEast()) {
                             turnLeft();
                         }
-                        recogerBeeper();
+                        mineroPickBeeper();
 
                     } else if (facingWest()) {
                         while (MiPrimerRobot.getPuertoMina()) {
                             ponerEnEspera();
                         }
                     }
-
                 }
 
                 if (minero.getStreet() == 11 && minero.getAvenue() == 13) {
@@ -194,23 +231,18 @@ class Racer extends Robot implements Runnable {
 
                         MiPrimerRobot.updateMina(); // Decimos que la mina esta "desocupada"
                         if (anyBeepersInBeeperBag()) {
-                            for (int i = 0; i < 20; i++) {
+                            for (int i = 0; i < MiPrimerRobot.getCapacidadMinero(); i++) {
                                 putBeeper();
                                 MiPrimerRobot.incrementBeepersPuertoMina();
                             }
                         }
-                        MiPrimerRobot.falsePuertoMina(); // Decimos que el puerto mina esta "desocupada"
                         ubicarMineroPuntoEspera(minero);
                     }
                 }
 
                 if (minero.getStreet() == 11 && minero.getAvenue() == 13 &&
                         MiPrimerRobot.getMina()) {
-                    for (Minero mineroActual : MiPrimerRobot.getMineros()) {
-                        if (mineroActual.getInsideTheMine() == false) {
-                            ubicarMineroPuntoEspera(mineroActual);
-                        }
-                    }
+                    ubicarMineroPuntoEspera(minero);
                 }
 
                 if (frontIsClear()) {
@@ -226,7 +258,8 @@ class Racer extends Robot implements Runnable {
                 }
 
                 if (tren.getStreet() == 11 && tren.getAvenue() == 12 && facingEast()) {
-                    while (MiPrimerRobot.getPuertoMina() == true || MiPrimerRobot.getBeepersPuertoMina() < 20) {
+                    while (MiPrimerRobot.getPuertoMina() == true
+                            || MiPrimerRobot.getBeepersPuertoMina() < MiPrimerRobot.getCapacidadTren()) {
                         ponerEnEspera();
                     }
                     move();
@@ -236,7 +269,7 @@ class Racer extends Robot implements Runnable {
                 if (tren.getStreet() == 11 && tren.getAvenue() == 13) {
                     MiPrimerRobot.truePuertoMina();
                     if (nextToABeeper()) {
-                        for (int i = 0; i < 20; i++) {
+                        for (int i = 0; i < MiPrimerRobot.getCapacidadTren(); i++) {
                             pickBeeper();
                             MiPrimerRobot.decrementBeepersPuertoMina();
                         }
@@ -251,17 +284,21 @@ class Racer extends Robot implements Runnable {
                     turnLeft();
                 }
 
-                if (tren.getStreet() == 1 && tren.getAvenue() == 3 && facingEast()) {
-                    if (anyBeepersInBeeperBag()) {
-                        for (int i = 0; i < 20; i++) {
-                            putBeeper();
-                        }
-                    }
-                }
-                if (tren.getStreet() == 2 && tren.getAvenue() == 3 && MiPrimerRobot.getPuertoExtractor()) {
+                if (tren.getStreet() == 2 && tren.getAvenue() == 3) {
                     while (MiPrimerRobot.getPuertoExtractor()) {
                         ponerEnEspera();
                     }
+                }
+
+                if (tren.getStreet() == 1 && tren.getAvenue() == 3 && facingEast()) {
+                    if (anyBeepersInBeeperBag()) {
+                        MiPrimerRobot.ocuparPuertoExtractor(); // decimos que puerto extractor esta ocupado
+                        for (int i = 0; i < MiPrimerRobot.getCapacidadTren(); i++) {
+                            putBeeper();
+                            MiPrimerRobot.incrementBeepersPuertoExtractor();
+                        }
+                    }
+                    MiPrimerRobot.desocuparPuertoExtractor();
                 }
 
                 verificarYEsperarSiFrenteOcupado(11);
@@ -299,6 +336,57 @@ class Racer extends Robot implements Runnable {
                 } else {
                     turnLeft();
                 }
+            } else if (robotColor.equals(Color.RED)) {
+
+                if (extractor.getStreet() == 1 && extractor.getAvenue() == 2) {
+                    while (MiPrimerRobot.getBeepersPuertoExtractor() < MiPrimerRobot.getCapacidadExtractor() || MiPrimerRobot.getPuertoExtractor()) {
+                        ponerEnEspera();
+                    }
+                }
+
+                if (extractor.getStreet() == 1 && extractor.getAvenue() == 3 && nextToABeeper()) {
+                    MiPrimerRobot.ocuparPuertoExtractor();
+                    for (int i = 0; i < MiPrimerRobot.getCapacidadExtractor(); i++) {
+                        pickBeeper();
+                    }
+                    turnLeft();
+                    turnLeft();
+                    MiPrimerRobot.desocuparPuertoExtractor();
+
+                }
+
+                if (extractor.getAvenue() == 1 && extractor.getStreet() == 1 && facingWest()) {
+                    turnLeft();
+                    turnLeft();
+                    turnLeft();
+                }
+
+                if (extractor.getAvenue() == 1 && extractor.getStreet() == 7 && facingNorth()) {
+                    turnLeft();
+                    turnLeft();
+                    turnLeft();
+                }
+
+                if (extractor.getStreet() == 13 && extractor.getAvenue() == 2) {
+                    for (int i = 0; i < MiPrimerRobot.getCapacidadExtractor(); i++) {
+                        putBeeper();
+                    }
+                    turnLeft();
+                    turnLeft();
+                }
+
+                if (extractor.getStreet() == 7 && extractor.getAvenue() == 2 && facingSouth()) {
+                    turnLeft();
+                    turnLeft();
+                    turnLeft();
+                }
+
+                if (frontIsClear()) {
+                    move();
+                    updateExtractorPosition(extractor);
+                } else {
+                    turnLeft();
+                }
             }
         }
     }
@@ -328,11 +416,22 @@ class Racer extends Robot implements Runnable {
         }
     }
 
-    private void recogerBeeper() {
-        minero.updateInsideTheMine();
+    private void updateExtractorPosition(Extractor extractor) {
+        if (facingNorth()) {
+            extractor.incrementStreet();
+        } else if (facingSouth()) {
+            extractor.decreaseStreet();
+        } else if (facingEast()) {
+            extractor.incrementAvenue();
+        } else if (facingWest()) {
+            extractor.decreaseAvenue();
+        }
+    }
+
+    private void mineroPickBeeper() {
         MiPrimerRobot.updateMina(); // Decimos que la mina esta "Ocupada"
         if (nextToABeeper()) {
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < MiPrimerRobot.getCapacidadMinero(); i++) {
                 pickBeeper();
             }
         }
@@ -350,9 +449,16 @@ class Racer extends Robot implements Runnable {
         while (!facingSouth()) {
             turnLeft();
         }
+        MiPrimerRobot.falsePuertoMina(); // Decimos que el puerto mina esta "desocupada"
         move();
         updateMineroPosition(minero);
         turnLeft();
+        int posicion = MiPrimerRobot.allMineros.indexOf(minero);
+        if (posicion != -1 && posicion > 1) {
+            if (minero.getStreet() == 10 && minero.getAvenue() == 13 && facingEast()) {
+                turnOff();
+            }
+        }
         move();
         updateMineroPosition(minero);
         turnLeft();
@@ -392,12 +498,10 @@ class Racer extends Robot implements Runnable {
 class Minero {
     private int street;
     private int avenue;
-    private boolean insideTheMine;
 
     public Minero(int street, int avenue, boolean insideTheMine) {
         this.street = street;
         this.avenue = avenue;
-        this.insideTheMine = insideTheMine;
     }
 
     public int getStreet() {
@@ -406,14 +510,6 @@ class Minero {
 
     public int getAvenue() {
         return avenue;
-    }
-
-    public boolean getInsideTheMine() {
-        return insideTheMine;
-    }
-
-    public void updateInsideTheMine() {
-        insideTheMine = !insideTheMine;
     }
 
     public void incrementStreet() {
@@ -438,6 +534,40 @@ class Tren {
     private int avenue;
 
     public Tren(int street, int avenue) {
+        this.street = street;
+        this.avenue = avenue;
+    }
+
+    public int getStreet() {
+        return street;
+    }
+
+    public int getAvenue() {
+        return avenue;
+    }
+
+    public void incrementStreet() {
+        street++;
+    }
+
+    public void incrementAvenue() {
+        avenue++;
+    }
+
+    public void decreaseStreet() {
+        street--;
+    }
+
+    public void decreaseAvenue() {
+        avenue--;
+    }
+}
+
+class Extractor {
+    private int street;
+    private int avenue;
+
+    public Extractor(int street, int avenue) {
         this.street = street;
         this.avenue = avenue;
     }
