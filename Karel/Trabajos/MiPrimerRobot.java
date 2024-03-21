@@ -80,7 +80,7 @@ public class MiPrimerRobot implements Directions {
     public static void createRobots(String[] args) {
         // Definición de valores por defecto
         int mineros = 2;
-        int trenes = 4;
+        int trenes = 18;
         int extractores = 1;
 
         // Procesamiento de argumentos de línea de comandos
@@ -117,7 +117,7 @@ public class MiPrimerRobot implements Directions {
             Workers trenesBot = new Workers(nuevoTren, 7, 1, South, 0, Color.CYAN);
             trenesBot.start();
             try {
-                Thread.sleep(3000);
+                Thread.sleep(3500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -160,7 +160,7 @@ class Racer extends Robot implements Runnable {
         }
 
         World.setupThread(this);
-        World.setDelay(50);
+        World.setDelay(30);
     }
 
     public void race() {
@@ -264,31 +264,34 @@ class Racer extends Robot implements Runnable {
                     }
                 }
 
-                // Suponiendo que esto es parte de un método más grande
+                verificarYEsperarSiFrenteOcupado(11);
+                verificarYEsperarSiFrenteOcupado(1);
 
-                if (tren.getStreet() == 11 && facingEast()) {
+                if (tren.getAvenue() == 8 && facingNorth()) {
                     while (true) {
                         boolean frenteOcupado = false;
-                        int avenueCurrentTrain = tren.getAvenue();
+                        int streetCurrentTrain = tren.getStreet();
 
                         for (Tren trenActual : MiPrimerRobot.getTrenes()) {
-                            int avenue = trenActual.getAvenue();
-                            // Comprobamos si hay un tren justo enfrente
-                            if (avenue > avenueCurrentTrain && avenue == (avenueCurrentTrain + 1)) {
+                            int street = trenActual.getStreet();
+                            if (street > streetCurrentTrain && (street - 1) == streetCurrentTrain && facingNorth()
+                                    && trenActual.getAvenue() == 8) {
+                                frenteOcupado = true;
+                                ponerEnEspera();
+                                break;
+                            }
+                            if (streetCurrentTrain == 5 && streetCurrentTrain + 2 == trenActual.getStreet()
+                                    && facingNorth() && trenActual.getAvenue() == 8) {
                                 frenteOcupado = true;
                                 ponerEnEspera();
                                 break;
                             }
                         }
-
                         if (!frenteOcupado) {
                             break;
                         }
-
                     }
                 }
-
-               
 
                 if (frontIsClear()) {
                     move();
@@ -356,6 +359,27 @@ class Racer extends Robot implements Runnable {
 
         while (MiPrimerRobot.getMina()) {
             ponerEnEspera();
+        }
+    }
+
+    public void verificarYEsperarSiFrenteOcupado(int streetDeseado) {
+        if (tren.getStreet() == streetDeseado && facingEast()) {
+            while (true) {
+                boolean frenteOcupado = false;
+                int avenueCurrentTrain = tren.getAvenue();
+                for (Tren trenActual : MiPrimerRobot.getTrenes()) {
+                    int avenue = trenActual.getAvenue();
+                    if (avenue > avenueCurrentTrain && avenue == (avenueCurrentTrain + 1) && facingEast()
+                            && trenActual.getStreet() == streetDeseado) {
+                        frenteOcupado = true;
+                        ponerEnEspera();
+                        break;
+                    }
+                }
+                if (!frenteOcupado) {
+                    break;
+                }
+            }
         }
     }
 
