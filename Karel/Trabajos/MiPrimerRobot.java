@@ -112,7 +112,7 @@ public class MiPrimerRobot implements Directions {
 
         // // Crear trenes
         for (int y = 0; y < trenes; y++) {
-            Tren nuevoTren = new Tren(7, 1, false);
+            Tren nuevoTren = new Tren(7, 1);
             allTrenes.add(nuevoTren);
             Workers trenesBot = new Workers(nuevoTren, 7, 1, South, 0, Color.CYAN);
             trenesBot.start();
@@ -257,7 +257,6 @@ class Racer extends Robot implements Runnable {
                             putBeeper();
                         }
                     }
-
                 }
                 if (tren.getStreet() == 2 && tren.getAvenue() == 3 && MiPrimerRobot.getPuertoExtractor()) {
                     while (MiPrimerRobot.getPuertoExtractor()) {
@@ -268,8 +267,8 @@ class Racer extends Robot implements Runnable {
                 // Suponiendo que esto es parte de un método más grande
 
                 if (tren.getStreet() == 11 && facingEast()) {
-                    while (true) { 
-                        boolean frenteOcupado = false; 
+                    while (true) {
+                        boolean frenteOcupado = false;
                         int avenueCurrentTrain = tren.getAvenue();
 
                         for (Tren trenActual : MiPrimerRobot.getTrenes()) {
@@ -277,19 +276,19 @@ class Racer extends Robot implements Runnable {
                             // Comprobamos si hay un tren justo enfrente
                             if (avenue > avenueCurrentTrain && avenue == (avenueCurrentTrain + 1)) {
                                 frenteOcupado = true;
-                                ponerEnEspera(); 
-                                break; 
+                                ponerEnEspera();
+                                break;
                             }
                         }
 
                         if (!frenteOcupado) {
-                            tren.frenteDesocupado();
-                            break; 
+                            break;
                         }
 
                     }
                 }
-                
+
+               
 
                 if (frontIsClear()) {
                     move();
