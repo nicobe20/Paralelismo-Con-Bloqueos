@@ -4,13 +4,14 @@ import java.util.List;
 public class Extraer {
 
     private List<Extractor> allExtractores = new ArrayList<>();
-    private int capacidadExtractor = 3;
+    private int capacidadExtractor = 50;
     private int beepersEnPuertoExtractor = 0;
     private boolean puertoExtractorOcupado = false;
+    private int minasExtraidas = 0;
 
     public Extraer() {
         this.allExtractores = new ArrayList<>();
-        this.capacidadExtractor = 3;
+        this.capacidadExtractor = 7;
         this.beepersEnPuertoExtractor = 0;
         this.puertoExtractorOcupado = false;
     }
@@ -45,5 +46,12 @@ public class Extraer {
 
     public void decrementBeepersPuertoExtractor() {
         beepersEnPuertoExtractor--;
+    }
+    public void incrementMinas(){
+        minasExtraidas++;
+
+    }
+    public int getMinas(){
+        return minasExtraidas;
     }
 }

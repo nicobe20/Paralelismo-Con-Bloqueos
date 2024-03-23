@@ -11,7 +11,7 @@ public class Minar {
 
     public Minar() {
         this.allMineros = new ArrayList<>();
-        this.capacidadMinero = 3;
+        this.capacidadMinero = 50;
         this.beepersEnPuertoMina = 0;
         this.puertoMinaOcupado = false;
         this.ocupado = false;

@@ -40,4 +40,6 @@ class Extractor {
     public void decreaseAvenue() {
         avenue--;
     }
+
+    
 }

@@ -3,7 +3,7 @@ import java.util.List;
 
 public class Transportar {
     private List<Tren> allTrenes = new ArrayList<>();
-    private int capacidadTren = 7;
+    private int capacidadTren = 120;
 
     public int getCapacidadTren() {
         return capacidadTren;

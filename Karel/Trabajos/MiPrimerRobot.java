@@ -27,8 +27,8 @@ public class MiPrimerRobot implements Directions {
     public static void createRobots(String[] args) {
         // Definición de valores por defecto
         int mineros = 2;
-        int trenes = 3;
-        int extractores = 3;
+        int trenes = 2;
+        int extractores = 2;
 
         // Procesamiento de argumentos de línea de comandos
         if (args.length > 0) {
@@ -58,6 +58,9 @@ public class MiPrimerRobot implements Directions {
         }
 
         // // Crear trenes
+        if(trenes>16){
+            trenes = 16;
+        }
         for (int y = 0; y < trenes; y++) {
             Tren nuevoTren = new Tren(7, 1);
             transporte.getTrenes().add(nuevoTren);
@@ -71,7 +74,11 @@ public class MiPrimerRobot implements Directions {
         }
 
         // // Crear extractores
+        if(extractores>4){
+            extractores = 4;
+        }
         for (int x = 0; x < extractores; x++) {
+            
             Extractor nuevoTren = new Extractor(7, 1, x == 0 ? true : false);
             extraer.getExtractores().add(nuevoTren);
             Workers extractoresBot = new Workers(nuevoTren, 7, 1, South, 0, Color.RED);
@@ -81,8 +88,9 @@ public class MiPrimerRobot implements Directions {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        
         }
-
+    
     }
 
     public static void main(String[] args) {
@@ -354,13 +362,40 @@ class Racer extends Robot implements Runnable {
                         }
                         girarIzquierda(3);
                     }
-
-                    if (extractor.getStreet() == 10 && extractor.getAvenue() == 2) {
+                    
+                    // implementar cambio de bodegas.
+                    if (extractor.getStreet() == 10 && extractor.getAvenue() == 2  && MiPrimerRobot.extraer.getMinas() < 3000) {
                         for (int i = 0; i < MiPrimerRobot.extraer.getCapacidadExtractor(); i++) {
                             putBeeper();
+                            MiPrimerRobot.extraer.incrementMinas();
                         }
                         girarIzquierda(2);
                     }
+                     
+                    if (extractor.getStreet() == 11 && extractor.getAvenue() == 2  && MiPrimerRobot.extraer.getMinas() <=6000) {
+                        for (int i = 0; i < MiPrimerRobot.extraer.getCapacidadExtractor(); i++) {
+                            putBeeper();
+                            MiPrimerRobot.extraer.incrementMinas();
+                        }
+                        girarIzquierda(2);
+                    }
+                    
+                    if (extractor.getStreet() == 12 && extractor.getAvenue() == 2  && MiPrimerRobot.extraer.getMinas() <= 9000) {
+                        for (int i = 0; i < MiPrimerRobot.extraer.getCapacidadExtractor(); i++) {
+                            putBeeper();
+                            MiPrimerRobot.extraer.incrementMinas();
+                        }
+                        girarIzquierda(2);
+                    }
+                    if (extractor.getStreet() == 13 && extractor.getAvenue() == 2  && MiPrimerRobot.extraer.getMinas() <=12000) {
+                        for (int i = 0; i < MiPrimerRobot.extraer.getCapacidadExtractor(); i++) {
+                            putBeeper();
+                            MiPrimerRobot.extraer.incrementMinas();
+                        }
+                        girarIzquierda(2);
+                    }
+                     
+
 
                 }
 
@@ -500,6 +535,9 @@ class Racer extends Robot implements Runnable {
             ponerEnEspera();
         }
     }
+
+   
+
 
     public void verificarYEsperarSiFrenteOcupado(int streetDeseado) {
         if (tren.getStreet() == streetDeseado && facingEast()) {
